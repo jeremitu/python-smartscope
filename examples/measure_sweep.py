@@ -1,3 +1,5 @@
+# needs `set PYTHONPATH=..` or similar
+# TODO pip pyproject.toml
 import numpy as np
 from matplotlib import pyplot as plt
 from time import sleep
@@ -54,5 +56,5 @@ plt.plot(data)
 plt.plot(wave)
 # plt.plot(data2)
 
-del scope.device_interface
+scope.device_interface.stop()
 plt.show()

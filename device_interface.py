@@ -28,9 +28,15 @@ class DeviceInterface:
 
         self.device_manager = self.Devices.DeviceManager()
         self.device_manager.Start()
+        self.running = True
+
+    def stop(self):
+        if self.running:
+          self.device_manager.Stop()
+          self.running = False
 
     def __del__(self):
-        self.device_manager.Stop()
+        self.stop()
 
     def wait_for_real_device(self):
         while not self.device_manager.SmartScopeConnected:
