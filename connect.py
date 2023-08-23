@@ -1,19 +1,40 @@
-### SmartScopeConnect.m
-import clr
+### see SmartScopeConnect.m
+# direct scripting
+import clr, os, time
 
-clr.AddReference("/opt/smartscope/DeviceInterface.dll")
+for path in [ 
+  "",
+  "/opt/smartscope/", 
+  "c:/Program Files (x86)/LabNation/SmartScope/",
+]:
+  path += "DeviceInterface.dll"
+  if os.path.exists(path):
+    #print(path)
+    clr.AddReference(path)
+    break
+
 from LabNation.DeviceInterface import Devices
 from LabNation.DeviceInterface import DataSources
 
-def connection_handler(x, y):
+def connection_handler(dev, connected):
+    return
     print("connection_handler")
-    print(x)
-    print(y)
+    print(dev)
+    print(conected)
 
-device_manager = Devices.DeviceManager(connection_handler)
+if False:
+  #problems with callback, why?
+  device_manager = Devices.DeviceManager(connection_handler)
+  #Devices.DeviceConnectHandler(device_manager.fallbackDevice, True)
+else:
+  device_manager = Devices.DeviceManager()
 print(device_manager)
-#Devices.DeviceConnectHandler(device_manager.fallbackDevice, True)
+
 device_manager.Start(True)
+for attempt in range(0, 10):
+  if device_manager.SmartScopeConnected:
+    break
+  time.sleep(0.1)
 
 scope = device_manager.MainDevice
 print(scope)
@@ -59,18 +80,28 @@ scope.CommitSettings()
 scope.Running = True
 scope.CommitSettings()
 
-print(scope.DataSourceScope.IsRunning)
+assert True == scope.DataSourceScope.IsRunning
 
 ### SmartScopePlot.m
 import numpy as np
+record = []
 
 def data_handler(data, args):
-    print(np.asarray(data.GetData(DataSources.ChannelDataSourceScope.Viewport, Devices.AnalogChannel.ChA).array))
+  # Acquisition, Viewport or Overview
+  data_a = data.GetData(DataSources.ChannelDataSourceScope.Viewport, Devices.AnalogChannel.ChA)
+  print(data_a)
+  ary = np.asarray(data_a.array)
+  record.append(ary)
+
+print(record)
+record = np.array(record)
+print(np.shape(record))
+np.savez('smartscope.npz', analog = record)
 
 scope.DataSourceScope.OnNewDataAvailable += data_handler
 scope.DataSourceScope.Start()
 
-from time import sleep
-sleep(10)
+time.sleep(1)
 
+scope.DataSourceScope.Stop()
 print("finished")

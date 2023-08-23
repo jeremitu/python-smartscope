@@ -1,4 +1,5 @@
 import clr
+import os
 from time import sleep
 
 class DeviceInterface:
@@ -7,8 +8,18 @@ class DeviceInterface:
     enums = None
     device_manager = None
 
-    def __init__(self, dll_path="/opt/smartscope/DeviceInterface.dll"):
-        clr.AddReference(dll_path)
+    def __init__(self, dll_path = ""):
+        for path in [ 
+          dll_path,
+          "/opt/smartscope/", 
+          "c:/Program Files (x86)/LabNation/SmartScope/",
+        ]:
+          path += "DeviceInterface.dll"
+          if os.path.exists(path):
+            #print(path)
+            clr.AddReference(path)
+            break
+        
         from LabNation.DeviceInterface import Devices
         from LabNation.DeviceInterface import DataSources
 
